@@ -1,0 +1,3345 @@
+{
+  "id": "83",
+  "name": "Qualysbot2.0 - Prod",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "test_ip",
+              "value": 200
+            }
+          ],
+          "string": [
+            {
+              "name": "Qualys-commercial",
+              "value": "=https://qualysapi.qg4.apps.qualys.com"
+            },
+            {
+              "name": "result",
+              "value": "sucess"
+            },
+            {
+              "name": "response_message",
+              "value": "ok"
+            },
+            {
+              "name": "Qualys-Govcloud",
+              "value": "https://qualysapi.qg3.apps.qualys.com"
+            },
+            {
+              "name": "Auth",
+              "value": "={{  $json['Qualyscred']}}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "id": "ff71dd2d-d784-4e02-ae0b-ca7117179a37",
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -4400,
+        3120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nvar cmd=$input.item.json.body['text'];\n\n\n\n$input.item.json.command = JSON.parse(cmd)['option'];\n$input.item.json.messageid = $input.item.json.body['conversation']['id'].split('=')[1];\n$input.item.json.aadObjectId=$input.item.json.body['from']['aadObjectId'];\nhost=JSON.parse($input.item.json.body.text)\n\n\n/*if(host.host_type==\"commercial\")\n{\n  $input.item.json.Qualyshost=$input.item.json['Qualys-commercial'];\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"IICS_QA\"\n  $input.item.json.iscanner_name=\"ICHS_QA\"\n}\n//if input (govclud/commercial)\nelse\n$input.item.json.Qualyshost=$input.item.json['Qualys-Govcloud'];*/\n\n$input.item.json.messageid = $input.item.json.body['conversation']['id'].split('=')[1];\n\nreturn $input.item;"
+      },
+      "id": "a4f57674-ee7a-41d3-b5ed-bf2752c4ca93",
+      "name": "extract command and teams details",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -4220,
+        3120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "nodeMode": "sender",
+        "dataType": "string",
+        "value1": "={{ $input.item.json.command }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "regex",
+              "value2": "/^\\s*(help)|(Help).*$/i"
+            },
+            {
+              "operation": "regex",
+              "value2": "/^\\s*(genreport).*$/i",
+              "output": 1
+            },
+            {
+              "operation": "regex",
+              "value2": "/^\\s*hostinfo.*$/i",
+              "output": 2
+            },
+            {
+              "operation": "regex",
+              "value2": "/^\\s*scan$/i",
+              "output": 3
+            },
+            {
+              "value2": "scan",
+              "output": 4
+            },
+            {
+              "value2": "scan_status",
+              "output": 5
+            },
+            {
+              "value2": "report_status",
+              "output": 6
+            },
+            {
+              "value2": "get_report",
+              "output": 7
+            },
+            {
+              "value2": "add4scan",
+              "output": 8
+            }
+          ]
+        }
+      },
+      "id": "bebabea7-0147-4fd2-a165-ba864a376c8d",
+      "name": "Switch based on command",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3980,
+        3120
+      ],
+      "notesInFlow": true,
+      "typeVersion": 1,
+      "notes": "Switch Sender"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json[\"Qualyshost\"]}}/api/2.0/fo/report/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "={{ $json['post_data'] }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "988c04e3-2d2d-4abc-adde-711d7760511d",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2960,
+        3040
+      ],
+      "typeVersion": 3,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "routeIndex": 1
+      },
+      "id": "2529bc3e-2df3-4985-9202-5db63c03d6e7",
+      "name": "genreport",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3500,
+        3000
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json[\"statusCode\"] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "893e37fb-9615-4e46-ad9a-8e8d3dca6648",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2540,
+        3040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json[\"statusCode\"] }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "ContentType",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "530b61f1-8c48-4c5a-95e6-183b1e5e3a3c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -700,
+        2820
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "=data",
+        "options": {
+          "normalize": true,
+          "trim": true
+        }
+      },
+      "id": "5834d2c0-a03a-4c85-8421-aa81f74f7e16",
+      "name": "XML",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2140,
+        3000
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": " //res=$('IF').item.json.statusCode;\n\n//if($input.item.json.SIMPLE_RETURN.RESPONSE.CODE==2000)\n//  $('HTTP Request').item.json.response_message=\"<span style=\\\"color:yellow\\\">Request failed because of error code:QB-BE-AUTH4</span>\"\n\n//if($input.item.json.SIMPLE_RETURN.RESPONSE.CODE==1905)\n // $('HTTP Request').item.json.response_message=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT<\"/span>\"\n\n//does not work for scan command\n//$('HTTP Request').item.json.messageid = $('genreport').item.json.messageid;\n\n//test for genreport\nparam=$('Code1').item.json.Qualyshost\nif(param.includes(\"https://qualysapi.qg4.apps.qualys.com\"))\n{\n  param=\"commercial\"\n}\nelse\n  param=\"govcloud\"\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('HTTP Request').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse if(message_response.includes(\"IP(s) for the report not in the user's account\") && statusCode==400)\n{\n  response_message=\"Invalid \"+param+\" IP for GenReport. Error code: QBOT_QS_CRD006\"\n}\nelse\n  response_message=message_response\n\n\n$('HTTP Request').item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+Code+and+Debug+Information'>Error codes and Debug information</a><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$('HTTP Request').item.json.messageid = $('Code1').item.json.messageid;\n$('HTTP Request').item.json.teamsid = $('Code1').item.json.teamsid;\n$('HTTP Request').item.json.channelid = $('Code1').item.json.channelid;\n/*$('HTTP Request').item.json.response_message=$('Code1').item.json.response_message*/\n\nreturn $('HTTP Request').item;"
+      },
+      "id": "3c085255-4cd0-4571-a556-ce11515db3f0",
+      "name": "handle failures",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1560,
+        2920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\ntry{\nreportid=$input.item.json.SIMPLE_RETURN.RESPONSE.ITEM_LIST.ITEM.VALUE\n}\ncatch (error){\n  error=\"<p style='color:red'>Oops! something went wrong</p>\"\n  $('Code1').item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT+\"</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n  return $('Code1').item\n}\n$input.item.json.response_message = \"<html><body><p>Report ID:\"+reportid+\"</p><br><p>Qualys Bot will now share the link to the report once available.\"\n//$input.item.json['Qualys-commercial']=\"https://qualysapi.qg2.apps.qualys.com\"\n$input.item.json.body=JSON.parse('{\"text\":{\"report_id_filter\":\"'+reportid+'\"}}')\n$input.item.json.Qualyshost=$('Code1').item.json.Qualyshost\n$input.item.json.Qualyscred =$('Code1').item.json.Qualyscred\n$input.item.json.messageid =$('Code1').item.json.messageid\n  $input.item.json.teamsid =$('Code1').item.json.teamsid\n  $input.item.json.channelid =$('Code1').item.json.channelid\n$input.item.json.aadObjectId=$('Code1').item.json.aadObjectId\nreturn $input.item;"
+      },
+      "id": "10226fa3-b01f-4f9a-a322-1bd2174c059a",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2420,
+        2840
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n\nreturn $input.item;"
+      },
+      "id": "0c77085f-acb2-4ee7-8eb3-fa110dd89709",
+      "name": "adaptivejson",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1480,
+        2820
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{ $json[\"statusCode\"] }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "ContentType",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6c993600-ef34-441e-beb8-70773e1978c1",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        140,
+        3660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json[\"Qualyshost\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "={{$('Code2').item.json.post_data  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "851b7460-1dcc-4884-8417-bd5977c72a4c",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2760,
+        3540
+      ],
+      "typeVersion": 3,
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "routeIndex": 3
+      },
+      "id": "33b6dbe4-2ef6-4737-900a-27b974647470",
+      "name": "scan",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3300,
+        3700
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var endpoint_filter=\"\"\n\n   cmd=JSON.parse($input.item.json.body['text']);\n   rawinput=cmd['scaninfo_filter'];\n\ntry {\n  $input.item.json['rawinput']=rawinput;\n    JSON.parse(rawinput);\n} catch (error) {\n  $input.item.json['splitlen']=rawinput.split(\" \").length;\n  if(rawinput.split(\" \").length>=1)\n  {\n    inputarray=rawinput.split(\" \");\n    endpoint_filter=rawinput.replaceAll(\" \",\",\");\n  }\n} \n\nif(endpoint_filter==\"\")\nendpoint_filter=cmd['scaninfo_filter']\n\n\n  \n\n\n\nhost=JSON.parse($input.item.json.body.text)\nif(host.host_type_scan==\"commercial\")\n{\n  if(host.scan_type==\"compliance\")\n  {\n    $input.item.json.Qualyshost='https://qualysapi.qg4.apps.qualys.com/api/2.0/fo/scan/compliance/'\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"Initial PC Options\"\n  $input.item.json.iscanner_name=\"ICHS_QA_New\"\n\n    $input.item.json.scan_title='PC-BOT-SCAN'\n  }\n  else{\n  $input.item.json.Qualyshost='https://qualysapi.qg4.apps.qualys.com/api/2.0/fo/scan/'\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"IICS_QA\"\n  $input.item.json.iscanner_name=\"ICHS_QA_New\"\n}\n}\nelse\n{\n  if(host.scan_type==\"compliance\")\n  {\n    $input.item.json.Qualyshost='https://qualysapi.qg3.apps.qualys.com/api/2.0/fo/scan/compliance/'\n $input.item.json.env=\"GovCloudDev\"\n  $input.item.json.option_title=\"Initial PC Options\"\n  $input.item.json.iscanner_name=\"FedRAMP_DEVQA\"\n    $input.item.json.scan_title='FedRAMP_DEVQA_Compliance'\n  }\n  else{\n  $input.item.json.Qualyshost='https://qualysapi.qg3.apps.qualys.com/api/2.0/fo/scan/'\n   $input.item.json.env=\"GovCloudDev\"\n$input.item.json.option_title=\"Initial Options\"\n$input.item.json.iscanner_name=\"FedRAMP_DEVQA\"\n  }\n}\n$input.item.json.post_data='action=launch&scan_title='+$input.item.json.scan_title+$input.item.json.env +'&option_title='+$input.item.json.option_title+'&iscanner_name='+$input.item.json.iscanner_name+'&ip='+endpoint_filter+''\n$input.item.json.endpoint_filter=endpoint_filter\nreturn $input.item"
+      },
+      "id": "7df3600b-dedd-4c04-b2dd-800ab9089c49",
+      "name": "compliehostdata1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3100,
+        3700
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json['statusCode'] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "f424ea1e-ea0c-4d1c-a341-834d23ba2c64",
+      "name": "IF3",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2600,
+        3540
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n$input.item.json.scanstatus_filter = JSON.parse($input.item.json.body.text).scanstatus_filter\n\n//$input.item.json.Qualyshost=\"https://qualysapi.qg2.apps.qualys.com\"\nreturn $input.item;"
+      },
+      "id": "35414f48-a42d-42ec-bd80-bdc44b52a843",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3040,
+        3900
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "workflowId": "106",
+        "options": {}
+      },
+      "id": "1873d766-db1f-4562-9367-a8ab57e1455c",
+      "name": "Scan status workflow-31",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        -2720,
+        3900
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": "106",
+        "options": {}
+      },
+      "id": "7cfce272-d533-41a8-9887-25a1ade33b17",
+      "name": "Execute Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        -1880,
+        3520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n$input.item.json.myNewField = 1;\n\nreturn $input.item;"
+      },
+      "id": "1e8eef73-16d4-406d-91aa-3c53e36ef5bd",
+      "name": "Code5",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1680,
+        3520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n$input.item.json.response_message = \"<html><body><h1 style='color:green'>Scan Launched</h1><br><p>New vulnerability scan launched for host(s): \"+$json['endpoint_filter']+\"<p><br><p><strong>Scan Ref:</strong>\"+$json['scan_ref']+\"<br><p style='color:green'>Bot will reply with scan details on this thread once the scan is finished and report is generated.<p>\";\n$input.item.json.response_type=\"HTML\"\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\nreturn $input.item;"
+      },
+      "id": "fc9ab1fe-c8c1-4e43-bcaa-d56565ceaa75",
+      "name": "Code6",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1760,
+        3720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d678c467-746b-4fb6-9cd4-c0fc52009ba7",
+      "name": "XML6",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2380,
+        3520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "scan_details=$input.item.json.SIMPLE_RETURN.RESPONSE.ITEM_LIST.ITEM\nscan_ref=\"\"\nscan_id=\"\"\nfor (let i = 0; i < scan_details.length; i++) {\n\n  if(scan_details[i].KEY==\"REFERENCE\")\n  {\n    scan_ref=scan_details[i].VALUE\n  }\n  if(scan_details[i].KEY==\"ID\")\n  {\n    scan_id=scan_details[i].VALUE\n  }\n}\n\n$('compliehostdata1').item.json.scan_ref=scan_ref\n$('compliehostdata1').item.json.scan_id=scan_id\n\nreturn $('compliehostdata1').item;"
+      },
+      "id": "9ba17bc6-d5a7-46b7-94ca-d63a2db57bb4",
+      "name": "Code7",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2080,
+        3520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n$input.item.json.response_message = \"<html><body><br><b>Note: If your instance is baked on top Oct major RC1 please use the given Teams channel: <a href='https://teams.microsoft.com/l/channel/19%3a372a1f861e7a413c8b2957cd7500c552%40thread.tacv2/New%2520Tenant%2520CT%2520Qualys%2520Self-Assistance%2520Channel?groupId=552b1bf2-29d2-4998-a60a-fc438ee9f4ff&tenantId=2638f43e-f77d-4fc7-ab92-7b753b7876fd'>New tenant bot</a> </b><br><p style='color:green'>FYI: Scanning via bot is only supported in Commercial: AWS ICHS QA Account(Oregon region) and GovCloud Dev Account</p><br><p>Add the public key to the host for authorization</p> <p>Commercial: <a href='https://thc.informatica.com/SecretServer/SecretView.aspx?secretid=22006'>IICS QA Key Link</a></p><p> GovCloud: <a href='https://thc.informatica.com/SecretServer/SecretView.aspx?secretid=18032'>DevQA Key Link</a></p><br><p style='color:green'>Processing: Qualys Bot is triggering scan on Qualys</p> Qualys Bot will reply with scan and report progress on this thread.<br><p>Expected Time for next update: 1 Minute</p>\";\n$input.item.json.response_type=\"HTML\"\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\nreturn $input.item;"
+      },
+      "id": "582a63d8-c203-4db7-ac9d-06630e50886c",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2900,
+        3700
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-177.westus.logic.azure.com:443/workflows/709acee487e44e27877289d9d5613085/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SsVJuSUoES3Izx8YmadMQXe8TfAAx489oPZFS4UD1GY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messageid",
+              "value": "={{ $json['messageid'] }}"
+            },
+            {
+              "name": "teamsid",
+              "value": "={{ $json['teamsid'] }}"
+            },
+            {
+              "name": "channelid",
+              "value": "={{ $json['channelid'] }}"
+            },
+            {
+              "name": "response_message",
+              "value": "={{ $json['response_message'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e32cd4b2-d307-41f7-9d97-e7ee709a6a84",
+      "name": "Teams HTTP response workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        60,
+        3860
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {},
+      "id": "7984a3b0-642d-4cb6-b777-2c565e4e6283",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1480,
+        3580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n$input.item.json.messageid=\"\"+$input.item.json.messageid\n\n$input.item.json.body=JSON.parse('{\"text\":{\"endpoint_filter\":\"'+$input.item.json.scan_target+'\"}}')\n$input.item.json['Qualys-commercial']=\"https://qualysapi.qg2.apps.qualys.com\"\nreturn $input.item;"
+      },
+      "id": "c4136aca-d844-4631-b43f-fb1d8cd1a40f",
+      "name": "Code8",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -740,
+        3800
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json['triggerpoint']}}",
+              "value2": "scan_cron_nonprod"
+            }
+          ]
+        }
+      },
+      "id": "5ff510df-7143-445b-873e-138b34deb9c8",
+      "name": "IF6",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1180,
+        3620
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 2
+      },
+      "id": "1349466e-bcbe-4d0c-a989-c1fa303a2a0c",
+      "name": "Hostinfo1",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3300,
+        3280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var endpoint_filter=\"\"\n\n   cmd=JSON.parse($input.item.json.body['text']);\n   rawinput=cmd['hostinfo_filter'];\n\nhost=JSON.parse($input.item.json.body.text)\n\nif(host.host_type==\"commercial\")\n{\n  $input.item.json.Qualyshost=$input.item.json['Qualys-commercial'];\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"IICS_QA\"\n  $input.item.json.iscanner_name=\"ICHS_QA\"\n}\n//if input (govclud/commercial)\nelse\n$input.item.json.Qualyshost=$input.item.json['Qualys-Govcloud'];\n\ntry {\n  $input.item.json['rawinput']=rawinput;\n    JSON.parse(rawinput);\n} catch (error) {\n  $input.item.json['splitlen']=rawinput.split(\" \").length;\n  if(rawinput.split(\" \").length>=1)\n  {\n    inputarray=rawinput.split(\" \");\n    endpoint_filter=rawinput.replaceAll(\" \",\",\");\n  }\n} \n\nif(endpoint_filter==\"\")\nendpoint_filter=cmd['endpoint_filter']\nhostexport_checkbox\n\nvar hostexport_checkbox=cmd['hostexport_checkbox']\n $input.item.json['export']=false\n$input.item.json['export_file_name']=\"hostdata_\"+new Date().getTime()+\".csv\"\n \nif(hostexport_checkbox=='export')\n{\n  $input.item.json['export']=true\n}\n\n$input.item.json.post_data='{\"action\": \"list\",\"details\": \"All/AGs\",\"show_tags\": 1,\"ips\": \"'+endpoint_filter+'\"}'\nreturn $input.item"
+      },
+      "id": "9dc70478-d6f4-4b22-a868-efb7f474b0f7",
+      "name": "compliehostdata2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3060,
+        3280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"Qualyshost\"]}}/api/2.0/fo/asset/host/",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={{ $json[\"post_data\"] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "97ac6b1c-fad5-4a50-915f-e9311121ff36",
+      "name": "HTTP hostinfo1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2300,
+        3200
+      ],
+      "typeVersion": 3,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": " var isvalid=true\ntry {\n        if (JSON.parse($input.item.json.post_data) && !!$input.item.json.post_data)\n        {\n          isvalid= true;\n        }\n    } catch (e) {\n        \n  {\n  \n    isvalid= false;\n  $input.item.json['statusCode']='400'\n  $input.item.json['response_message']=\"Invalid query parameter:<span style=\\\"color:yellow\\\">\"+\n    JSON.parse($input.item.json.body['text'])['hostinfo_filter']+\".</span>  <br> <span>Please follow the valid pattern: <span style=\\\"color:yellow\\\"><ip1> <ip2> or <ip1>,<ip2></span></span>\"\n   }\n}\n\n\n$input.item.json['isvalid']=isvalid\nreturn $input.item;"
+      },
+      "id": "9158e141-3d56-4a44-85bd-2d126d378935",
+      "name": "Validate user input1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2720,
+        3260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json[\"isvalid\"] }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "3ea9d66d-66e3-4fea-818b-145d5dfb2f22",
+      "name": "IF7",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2480,
+        3260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json[\"statusCode\"] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "8db91af2-6622-467c-8a70-d50d9a217e80",
+      "name": "IF8",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2100,
+        3200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var columns=[\"ID\",\"IP\",\"DNS\",\"CLOUD_PROVIDER\",\"CLOUD_SERVICE\",\"OS\",\"CLOUD_RESOURCE_ID\",\"TAGS\",\"LAST_VULN_SCAN_DATETIME\"];\nvar hosts=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST;\nvar pagination=true\nif($input.item.json['data'])\n{\n  var url=$('Share CSV1').item.json.data;\n}\nelse\n  var url=\"Thisispending\"\n exportcardvisible=false;\nif($('IF7').item.json['export'])\n  {\n    exportcardvisible=true;\n  }\n\n//if (count==0)\n  //{\n  //  exportcardvisible=false;\n  //}\n\n//if(count==1)\n//{\n//  pagination=false\n//}\nvar maxcards=3\nvar images=[\"https://i.ibb.co/6r0Y20t/CSOC-Qualys-Bot-1030-770px-2.gif\",\"https://images.alphacoders.com/123/1239346.png\",\"https://i.pinimg.com/564x/d5/09/40/d50940022ac8357d3a1db6e01f18c5ae.jpg\",\"https://images4.alphacoders.com/760/760461.png\"]\n\nvar exportcard='{ \"type\": \"ActionSet\", \"actions\": [{ \"type\": \"Action.OpenUrl\", \"title\": \"CSV Export\", \"url\": \"'+url+'\" }], \"horizontalAlignment\": \"Right\", \"isVisible\": '+exportcardvisible+', \"spacing\": \"None\", \"height\": \"stretch\" }'\n//Variable setup\n//////////////////////////////////////////////////\n//////////////////////////////////////////////////\n\nif (Array.isArray(hosts)) \n    {\n      count=hosts.length\n      $input.item.json.count=count\n      var loop_card_elements=\"\"\n      next=0;\n      isvisible=true\n      totalcount=hosts.length\n      if(count<maxcards && count>0 )\n      {\n        maxcards=count\n        $input.item.json.maxcards=maxcards\n        $input.item.json.inside=true\n      }\n        for (let j = 0; j < maxcards; j++) \n      {\n         if (j!==0) \n         {\n            isvisible=false;\n         }\n        if (j+1==maxcards) {\n          next=0;\n        }\n        else{\n          next=j+1\n        }\n        var fielddata=\"\"\n        for (let i = 0; i < columns.length; i++) \n        {\n\n        try\n          {\n            field=columns[i]\n            if(field=='TAGS')\n            {\n               obj=hosts[j][field]\n              arr=obj['TAG']\n              let n=arr.length\n              fielddata=fielddata+\"TAGS : \"+arr[0].NAME\n              for(let k=1;k<n;k++)\n                {\n                  //fielddata+= field.replaceAll(\"_\",\" \")+\" : \"+arr[k].NAME+\"-\"+arr[k].TAG_ID+\" \\n\";\n                 fielddata=fielddata+\",\"+arr[k].NAME\n                }\n              fielddata=fielddata+\"\\n\"\n            }\n            else\n            fielddata+= field.replaceAll(\"_\",\" \")+\" : \"+hosts[j][field]+\" \\n\";\n          }\n          catch(error)\n          {\n        \n          }\n         } \n        //fielddata=fielddata+'[Please provide your feedback](https://forms.office.com/Pages/ResponsePage.aspxHost=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6)'\n        loop_card_elements+=',{           \"type\": \"Container\",       \"items\": [               {                   \"type\": \"ColumnSet\",                   \"columns\": [                       { \"type\": \"Column\",              \"width\": \"stretch\",\"minHeight\": \"240px\",\"backgroundImage\": {\"url\": \"'+images[(j%(images.length))]+'\",                              \"horizontalAlignment\": \"Center\",\"verticalAlignment\": \"Bottom\"},                           \"items\": [                               {                                   \"type\": \"TextBlock\",                                   \"text\": \"Instance Details('+(j+1)+'/'+maxcards+')\",                                   \"wrap\": true, \"color\":\"light\"  ,                                \"spacing\": \"Large\",                                   \"separator\": true                               },                               {                                   \"type\": \"RichTextBlock\",                                   \"inlines\": [                                       {                                           \"type\": \"TextRun\", \"color\": \"light\" ,                                         \"text\": \"'+fielddata+'\"                                      }                                   ]                               }                           ]                       },                       {                           \"type\": \"Column\",                           \"width\": \"56px\",                           \"backgroundImage\": {                               \"url\": \"'+images[(j%images.length)+1]+'\",\"verticalAlignment\": \"Bottom\"   },                           \"items\": [                               {                                   \"type\": \"Image\",                                   \"url\": \"https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png\",                                   \"width\": \"24px\",                                   \"height\": \"24px\"                               }                           ],                           \"verticalContentAlignment\": \"Center\",                           \"selectAction\": {                               \"type\": \"Action.ToggleVisibility\",                               \"title\": \"Next\",                               \"targetElements\": [                                   \"instance_set'+j+'\",                                   \"instance_set'+(next)+'\"     ]},\"isVisible\": '+pagination+'  }                   ],                   \"horizontalAlignment\": \"Center\"               }           ],           \"minHeight\": \"1px\",            \"spacing\": \"None\",           \"id\": \"instance_set'+j+'\", \"isVisible\": '+isvisible+',          \"separator\": true,           \"height\": \"stretch\",           \"style\": \"emphasis\"       }'\n   \n      }\n      loop_card_elements=loop_card_elements+',{ \"type\": \"ActionSet\", \"actions\": [{ \"type\": \"Action.OpenUrl\", \"title\": \"Feedback\", \"url\":\"https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6\" }]}'\n    }\nelse{\n  pagination=false\n  var fielddata=\"\"\n  var loop_card_elements=\"\"\n  next=0;\n  maxcards=1\n  isvisible=true\n  totalcount=1\n  for (let i = 0; i < columns.length; i++) \n    {\n\n\n      try\n      {\n        field=columns[i]\n      \n            if(field=='TAGS')\n            {\n               obj=hosts[field]\n              arr=obj['TAG']\n              let n=arr.length\n              fielddata=fielddata+\"TAGS : \"+arr[0].NAME\n              for(let k=0;k<n;k++)\n                {\n                  //fielddata+= field.replaceAll(\"_\",\" \")+\" : \"+arr[k].NAME+\"-\"+\n                    //arr[k].TAG_ID+\" \\n\";\n                  fielddata=fielddata+\",\"+arr[k].NAME\n                 \n                }\n              fielddata=fielddata+\"\\n\"\n            }\n        else\n        fielddata+= field.replace(\"_\",\" \")+\" : \"+hosts[field]+\" \\n\";\n      }\n      catch(error)\n      {\n        \n      }\n     }  \n      loop_card_elements+=',{           \"type\": \"Container\",           \"items\": [               {                   \"type\": \"ColumnSet\",                   \"columns\": [                       { \"type\": \"Column\",              \"width\": \"stretch\",\"minHeight\": \"240px\",\"backgroundImage\": {\"url\": \"'+images[(0%(images.length))]+'\",                              \"horizontalAlignment\": \"Center\",\"verticalAlignment\": \"Bottom\"},                           \"items\": [                               {                                   \"type\": \"TextBlock\",                                   \"text\": \"Instance Details('+(0+1)+'/'+maxcards+')\",                                   \"wrap\": true, \"color\":\"light\"  ,                                \"spacing\": \"Large\",                                   \"separator\": true                               },                               {                                   \"type\": \"RichTextBlock\",                                   \"inlines\": [                                       {                                           \"type\": \"TextRun\", \"color\": \"light\" ,                                         \"text\": \"'+fielddata+'\"                                      }                                   ]                               }                           ]                       },                       {                           \"type\": \"Column\",                           \"width\": \"56px\",                           \"backgroundImage\": {                               \"url\": \"'+images[(0%images.length)+1]+'\",\"verticalAlignment\": \"Bottom\"   },                           \"items\": [                               {                                   \"type\": \"Image\",                                   \"url\": \"https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png\",                                   \"width\": \"24px\",                                   \"height\": \"24px\"                               }                           ],                           \"verticalContentAlignment\": \"Center\",                           \"selectAction\": {                               \"type\": \"Action.ToggleVisibility\",                               \"title\": \"Next\",                               \"targetElements\": [                                   \"instance_set'+0+'\",                                   \"instance_set'+(next)+'\"     ]},\"isVisible\": '+pagination+'  }                   ],                   \"horizontalAlignment\": \"Center\"               }           ],           \"minHeight\": \"1px\",            \"spacing\": \"None\",           \"id\": \"instance_set'+0+'\", \"isVisible\": '+isvisible+',          \"separator\": true,           \"height\": \"stretch\",           \"style\": \"emphasis\"       },{ \"type\": \"ActionSet\", \"actions\": [{ \"type\": \"Action.OpenUrl\", \"title\": \"Feedback\", \"url\":\"https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6\" }]}'\n   \n  \n}\n\n\n$('IF8').item.json.adaptivejson='{\"type\": \"AdaptiveCard\",\"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",\"version\": \"1.4\",\"body\": [{\"type\": \"Container\",\"items\": [{\"type\": \"ColumnSet\",\"columns\": [{\"type\": \"Column\",\"width\": 80,\"items\": [{\"type\": \"TextBlock\",\"text\": \"**Instance Count**: '+totalcount+'\",\"spacing\": \"Large\",\"horizontalAlignment\": \"Right\",\"separator\": true,\"wrap\": true,\"fontType\": \"Default\",\"size\": \"Large\",\"weight\": \"Bolder\",\"color\": \"Accent\"}],\"verticalContentAlignment\": \"Bottom\"},{\"type\": \"Column\",\"width\": 39,\"items\": ['+exportcard+'],\"verticalContentAlignment\": \"Center\",\"bleed\": true,\"horizontalAlignment\": \"Left\",\"separator\": false}]}]},{\"type\": \"TextBlock\",\"text\": \"Note: Bot will only show '+maxcards+' instance details. For more, Please run the command again make sure to check **export results into csv** checkbox.\",\"wrap\": true,\"size\": \"Small\",\"weight\": \"Lighter\",\"color\": \"Warning\",\"isSubtle\": true,\"horizontalAlignment\": \"Center\"}'+loop_card_elements+'   ]}'\n$('IF8').item.json.exportcardvisible=exportcardvisible\n\n$('IF8').item.json.messageid=$('IF7').item.json.messageid\n\nreturn $('IF8').item"
+      },
+      "id": "2507cef7-d57b-4dc8-9658-58d2c2a7e474",
+      "name": "Reply with Adaptive Card1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -160,
+        3320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n/*var endpoints=$('HTTP hostinfo1').item.json.body.reply['endpoints']\nif (endpoints.length==0)\n{\n   endpoints=$('Code2').item.json.csvdata\n}\nvar csv=\"\"\n\nvar jsonarr=($input.item.json['endpoint_response'])\n\nfor (var i = 0; i < jsonarr.length; i++) {\n  field=$input.item.json['endpoint_response'][i];\n  if(i==0)\n  csv+= field.replace(\"_\",\" \");\n  else\n    csv+= \",\"+field.replace(\"_\",\" \");\n}\ncsv+= \" \\n\";  \nif (endpoints.length>0)\n{\n  endpoints.forEach(function(endpoint) {\n  \n    \n  for (var i = 0; i < jsonarr.length; i++) {\n  \n    field=$input.item.json['endpoint_response'][i];\n    try{  \n      if(i==0)\n      {\n        \n        csv+= endpoint[field];\n      }\n      else\n      csv+=\",\"+ endpoint[field];  \n    }\n    catch(error)\n    {\n      $('compliehostdata2').item.json.lent1=$('HTTP hostinfo1').item.json.body['reply']['endpoints'][i]\n    }\n    \n  }\n  csv+= \" \\n\";  //csv+=endpoint['endpoint_id']+\",\"+endpoint['endpoint_name']+\",\"+endpoint['public_ip']+\",\"+endpoint['endpoint_status']+\"\\n\"\n  });\n}\n$input.item.json.export_data=csv\nreturn $input.item;\n/*\nip=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST.IP\nid=ip=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST.ID\nfqdn=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST.DNS_DATA.FQDN\nos=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.OS\ncloud_provider=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.CLOUD_PROVIDER\ncloud_service=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.CLOUD_SERVICE\ncloud_resouce_id=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.CLOUD_RESOURCE_ID\ntags=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.TAGS\ncloud_service=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.CLOUD_SERVICE\nlast_vuln_scan_datetime=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.LAST_VULN_SCAN_DATETIME\nlast_vm_scanned_date=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.LAST_VM_SCANNED_DATE\nLAST_VM_AUTH_SCANNED_DATE\nlast_compliance_scan_date=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.LAST_COMPLIANCE_SCAN_DATETIME\n\njson1=input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST\n*/\njson2=$input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST.HOST\n\narr=[\"IP\",\"ID\",\"DNS_DATA\",\"OS\",\"CLOUD_PROVIDER\",\"CLOUD_SERVICE\",\"TAGS\",\"LAST_VULN_SCAN_DATETIME\",\"LAST_VM_SCANNED_DATE\",\"LAST_VM_AUTH_SCANNED_DATE\",\"LAST_COMPLIANCE_SCAN_DATETIME\",]\ncsv=''\n\nlet n=arr.length\n\ncsv=csv+arr[0]\nfor(let j=1;j<n;j++)\n  {\n    csv=csv+\",\"+arr[j]\n  }\n\ncsv=csv+\"\\n\"\n\nif (Array.isArray(json2))\n{\n  count=json2.length\n    \n  for(let j=0;j<count;j++){\n    \n         csv=csv+json2[j][arr[0]]\n    \n        for (let i = 1; i < n; i++) \n        {\n         \n        try\n          {\n            field=arr[i]\n            if(field=='TAGS')\n            {\n               obj=json2[j][field]\n              arr_tag=obj['TAG']\n              let t=arr_tag.length\n               tags=arr_tag[0].NAME\n              //tags=''\n              for(let k=1;k<t;k++)\n                {\n                  tags=tags+\"/\"+arr_tag[k].NAME\n                 \n                }\n        csv=csv+\",\"+tags\n            }\n             else if(arr[i]==\"DNS_DATA\")\n           {\n        csv=csv+\",\"+json2[j].DNS_DATA[\"FQDN\"]\n            }\n            else\n             csv=csv+\",\"+json2[j][field]\n          }\n          catch(error)\n          {\n        \n          }\n        }\n    csv=csv+\"\\n\"\n  }\n}\nelse{\n\ncsv=csv+json2[arr[0]]\n\nfor(let i=1;i<n;i++)\n  {\n    \n    \n      if(arr[i]==\"DNS_DATA\")\n      {\n        csv=csv+\",\"+json2.DNS_DATA[\"FQDN\"]\n      }\n      \n      \n    \n    else if(arr[i]==\"TAGS\")\n    {\n      obj=json2.TAGS\n      arr_tag=obj['TAG']\n      let n=arr_tag.length\n      tags=arr_tag[0].NAME\n              for(let k=1;k<n;k++)\n                {\n                  tags=tags+\"/\"+arr_tag[k].NAME\n                \n                 \n                }\n        csv=csv+\",\"+tags\n     \n    }\n    else\n    {\n     field=arr[i]\n    csv=csv+\",\"+json2[field]\n    }\n  }\n\n}\n$input.item.json.export_data=csv\n//$input.item.json.export_file_name=\"data\"+\"_\"+new Date().getTime()+\".csv\"\nreturn $input.item\n\n\n\n\n\n\n"
+      },
+      "id": "22b10fc2-6ac4-47c2-806f-2eaa10c781af",
+      "name": "json to csv1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -940,
+        2960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-133.westus.logic.azure.com:443/workflows/fab04f5d83004f5684397362824e501d/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=v1ViaxYOrLfpCU7mt3_jNPEkZSMNHEJt5EtJonMZUsE",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $node[\"json to csv1\"].json['export_data'] }}\n"
+            },
+            {
+              "name": "name",
+              "value": "={{ $node[\"compliehostdata2\"].json[\"export_file_name\"] }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $node[\"compliehostdata2\"].json[\"body\"][\"from\"][\"aadObjectId\"] }}"
+            },
+            {
+              "name": "folder",
+              "value": "host_info"
+            },
+            {
+              "name": "bot",
+              "value": "qualys"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "438c2ad3-c4bd-4138-90e3-91bb03811246",
+      "name": "Share CSV1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -800,
+        2980
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{true}}",
+              "value2": "={{ $node[\"IF7\"].json[\"export\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "b31e125f-c9e0-4ca7-9416-7ef983816286",
+      "name": "IF10",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1360,
+        3060
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "message_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('HTTP hostinfo1').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n$('HTTP hostinfo1').item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+Code+and+Debug+Information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n$('HTTP hostinfo1').item.json.messageid=$('Validate user input1').item.json.messageid\n$('HTTP hostinfo1').item.json.channelid=$('Validate user input1').item.json.body.channelData.channel.id\n$('HTTP hostinfo1').item.json.teamsid=$('Validate user input1').item.json.body.channelData.team.id\nreturn $('HTTP hostinfo1').item "
+      },
+      "id": "a0802615-c762-4ce2-8c49-0f3f24086735",
+      "name": "Code10",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1620,
+        3300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var endpoint_filter=\"\"\nvar policy_id=0\nisCompliance=false\nos=''\ntry {\n  \n\ncmd=JSON.parse($input.item.json.body['text']);\n  isCompliance=$input.item.json.isCompliance;\n  if (isCompliance)\n  {\n    os=cmd['genreport_os']\n  }\n  \n} catch (error) {\n  cmd=$input.item.json.body['text'];\n}\nips=cmd['endpoint_filter'];\nif(ips.split(\" \").length>=1)\n{\n    endpoint_filter=ips.replaceAll(\" \",\",\");\n  }\ntry {\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\n\n}\ncatch(error)\n{\n  //alredy present do nothing\n}\n\nendpoint_file_name=endpoint_filter.split(',')\nif(endpoint_file_name.length>1)\n{\nfilename=endpoint_file_name[0]+\"_\"+endpoint_file_name[1]\n}\nelse\n{\n  filename=endpoint_file_name[0]\n}\n$input.item.json.endpoint_filter=endpoint_filter\n\n\n$input.item.json.report_type='Scan'\n $input.item.json.policy=''\n\nif($input.item.json.Qualyshost.includes(\"https://qualysapi.qg4.apps.qualys.com\"))\n{\n  if($input.item.json.Qualyshost.includes(\"compliance\") || isCompliance==true)\n\n  {\n    if($input.item.json.os=='centos' || os=='centos'){\n          policy_id=1769882\n    }\n    else if ($input.item.json.os=='rhel' || os=='rhel')\n    {\n      policy_id=1769846\n    }\n    else if ($input.item.json.os=='rocky' || os=='rocky')\n    {\n      policy_id=518034\n    }\n    \n    $json['post_data']='action=launch&template_id=806028&output_format=csv&report_title=Scanreport for '+filename+'&report_type=Policy&ips='+endpoint_filter+'&policy_id='+policy_id\n    \n  }\n  else{\n\n    $input.item.json.post_data='action=launch&template_id=806027&output_format=csv&report_title=Scanreport for '+filename+'&report_type=Scan&ips='+endpoint_filter\n}\n  $input.item.json.Qualyshost='https://qualysapi.qg4.apps.qualys.com'\n}\nelse\n{\n  if($input.item.json.Qualyshost.includes(\"compliance\") || isCompliance==true){\n    $input.item.json.govcompliance=true\n if($input.item.json.os=='centos'){\n          policy_id=5118696\n    }\n  else if ($input.item.json.os=='rhel'){\n    policy_id=5118697\n  }\n    else if ($input.item.json.os=='rocky'|| os=='rocky'){\n    policy_id=6190344\n  }\n    \n    $json['post_data']='action=launch&template_id=9878614&output_format=csv&report_title=Scanreport for '+filename+'&report_type=Policy&ips='+endpoint_filter+'&policy_id='+policy_id\n  }\n  else\n  {\n    $input.item.json.post_data='action=launch&template_id=9878612&output_format=csv&report_title=Scanreport for '+filename+'&report_type=Scan&ips='+endpoint_filter\n      }\n  \n  $input.item.json.Qualyshost='https://qualysapi.qg3.apps.qualys.com'\n}\n\n\nreturn $input.item;"
+      },
+      "id": "43717564-5688-4c77-845c-0724a85e7425",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3180,
+        3040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var report_ip_filter=\"\"\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\ncmd=JSON.parse($input.item.json.body['text']);\nips=cmd['report_ip_filter'];\nif(ips.split(\" \").length>=1)\n{\n    report_ip_filter=ips.replace(\" \",\",\");\n  }\nelse\n  report_ip_filter=ips\n$input.item.json.report_ip_filter=report_ip_filter\nreturn $input.item;"
+      },
+      "id": "e81fcd2a-4626-4a84-9c3b-3c37d4aad4ed",
+      "name": "Code11",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2940,
+        2180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json[\"Qualyshost\"]}}/api/2.0/fo/report/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "=action=list&id={{$json['report_ip_filter']}}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "91dac06a-9d0e-4392-a958-c3a471f5bc8a",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2740,
+        2180
+      ],
+      "typeVersion": 3,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\ntry{\nreport_ip_filter=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.ID\ntitle=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.TITLE\nformat=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.OUTPUT_FORMAT\nstate=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.STATUS.STATE\n\n$input.item.json.response_message=\"<table bordercolor='black' border= '2'><thead><tr style = 'background-color : Green; color: White'><th>Report ID</th><th>Report Status</th><th>Title</th><th>Report Type</th></tr><tr><td>\"+report_ip_filter+\"</td><td>\"+state+\"</td><td>\"+title+\"</td><td>\"+format+\"</td></tr></table><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a>\"\n}\n\ncatch(e)\n{\n  error=\"<p style='color:red'>Oops! something went wrong</p>\"\n  param=\"govcloud\"\n  if($('Code11').item.json.Qualyshost==\"https://qualysapi.qg4.apps.qualys.com\")\n  {\n    param=\"commercial\"\n  }\n  $input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>Please enter a valid \"+param+\" Report ID. Error Code: QBOT_QS_CRD008</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></body></html\"\n}\n$input.item.json.messageid = $('Code11').item.json.messageid;\n$input.item.json.channelid=$('Code11').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('Code11').item.json.body.channelData.team.id\n\nreturn $input.item;"
+      },
+      "id": "df6a30ca-c73b-45a1-a2b7-de8c555ff256",
+      "name": "Code12",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1840,
+        2020
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8c028f14-1713-401a-a293-6ac692f71498",
+      "name": "XML1",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2120,
+        2020
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "1de7c463-52c4-453d-8f92-834c173227ff",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -1100,
+        3980
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json[\"statusCode\"] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "7ce92435-7c38-46a5-a37b-1f2eae751ecb",
+      "name": "IF1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2500,
+        2180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "=data",
+        "options": {
+          "normalize": true,
+          "trim": true
+        }
+      },
+      "id": "10eade5d-5aaa-4ad9-a782-1deccf4d0797",
+      "name": "XML2",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2660,
+        2640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Loop over input items and add a new field\n// called 'myNewField' to the JSON of each one\n$input.item.json.HOST_LIST_OUTPUT=$('json to csv1').item.json.HOST_LIST_OUTPUT\n$input.item.json.export_data=$('json to csv1').item.json.export_data\n$input.item.json.export_file_name=$('json to csv1').item.json.export_file_name\nreturn $input.item;"
+      },
+      "id": "cb910a13-4353-4ba9-97cc-e99e5f7ed346",
+      "name": "Code13",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -580,
+        3000
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 7
+      },
+      "id": "38a672b0-f2cd-4df8-9019-09dd8368146f",
+      "name": "getreport",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3140,
+        2400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 6
+      },
+      "id": "6f494dfe-2274-4253-932b-8de11cd33eb2",
+      "name": "report_status",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3160,
+        2180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var report_id_filter=\"\"\nif(!$input.item.json.channelid)\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\nif(!$input.item.json.teamsid)\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\ntry{\ncmd=JSON.parse($input.item.json.body['text']);\n} catch (error) {\n  cmd=$input.item.json.body['text'];\n}\nips=cmd['report_id_filter'];\nif(ips.split(\" \").length>=1)\n{\n    report_id_filter=ips.replace(\" \",\",\");\n  }\nelse\n  report_id_filter=ips\n\n$input.item.json.report_id_filter=report_id_filter\nreturn $input.item;"
+      },
+      "id": "97887633-b192-49f3-abd1-fe44a53f049f",
+      "name": "Code14",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2940,
+        2400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json[\"Qualyshost\"]}}/api/2.0/fo/report/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "=action=fetch&id={{$json['report_id_filter']}}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "3607e706-944d-4223-8027-2a7586379d06",
+      "name": "HTTP Request3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2760,
+        2400
+      ],
+      "typeVersion": 3,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json[\"statusCode\"] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "efaeb475-70d1-4a5c-b69e-29dce43b03cb",
+      "name": "IF2",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2560,
+        2400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nif($input.item.json.data.includes(\"<TEXT>Report cannot be fetched.</TEXT>\"))\n   {\n  $input.item.json.error=true\n   }\nelse{\nvar filename=$input.item.json.headers['content-disposition']\n\nfilename=filename.split('=')[1]\n\n//csvdata=$input.item.json.data;\n\n$input.item.json.filename=filename\n//$input.item.json.csvdata=csvdata\n//command=('Switch based on command').item.\n//$input.item.json.aadObjectId=$('Switch based on command').item.json.data.body.from['aadObjectId']\n$input.item.json.aadObjectId=$('Code14').item.json.aadObjectId\n\n\n//$input.item.json.response_message=\"<table bordercolor='black' border= '2'><thead><tr style = 'background-color : Green; color: White'><th>Report ID</th><th>Report Status</th><th>Title</th><th>Report Type</th></tr><tr><td>\"+report_ip_filter+\"</td><td>\"+state+\"</td><td>\"+title+\"</td><td>\"+format+\"</td></tr></table>\"\n\n//$input.item.json.channelid=$('Code11').item.json.body.channelData.channel.id\n//$input.item.json.teamsid=$('Code11').item.json.body.channelData.team.id\n}\nreturn $input.item;"
+      },
+      "id": "0f666a3e-2646-4a06-8c1b-ad9a6b299007",
+      "name": "Code15",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1600,
+        2260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-140.westus.logic.azure.com:443/workflows/2ad2dfb4546e450bade08034150d3df0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=odVnlVTUWcHS9tneKzfOFTmiALlugocE1oZ6z03XTYo",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $('Code15').item.json.data}}\n"
+            },
+            {
+              "name": "name",
+              "value": "={{ $('Code15').item.json.filename }}\n"
+            },
+            {
+              "name": "from",
+              "value": "={{ $('Code15').item.json.aadObjectId }}"
+            },
+            {
+              "name": "bot",
+              "value": "qualys"
+            },
+            {
+              "name": "folder",
+              "value": "get_reports"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "3c71e707-5691-4091-8542-f0e636cb16f2",
+      "name": "Share CSV2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -160,
+        2300
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var link=$input.item.json.data\n$input.item.json.messageid=$('Code14').item.json.messageid\n$input.item.json.teamsid=$('Code14').item.json.teamsid\n$input.item.json.channelid=$('Code14').item.json.channelid\n$input.item.json.response_message=\"<html><body><p style='color:green'>Report Generation Success</p><br><p><a href=\"+link+\">Link to Report</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></p>\"\nreturn $input.item;"
+      },
+      "id": "8548df06-27b7-4039-bc3c-7152534c484f",
+      "name": "Code16",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        220,
+        2320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\ndata=$input.item.json.data;\n$input.item.json.loop=false;\ntry{\n  $('getreport').item.json\n}\n\ncatch(e){\nif(data.includes('<TEXT>Report cannot be fetched.</TEXT>'))\n{\n  $input.item.json.loop=true;\n}\n}\nreturn $input.item;"
+      },
+      "id": "4a7e3bce-3b67-423b-b8b1-0432eab401b8",
+      "name": "Code17",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2080,
+        2360
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json['loop'] }}",
+              "value2": "={{ false }}"
+            }
+          ]
+        }
+      },
+      "id": "b99e851f-47c1-4410-96eb-9de97bdd038c",
+      "name": "IF4",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1900,
+        2340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "6400a96a-dfcf-4b00-bb9b-5685005577a4",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -2200,
+        2600
+      ],
+      "webhookId": "8f407bc1-d546-43ad-904d-d1c1cd25c85b",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\n\nreturn $('Code14').item;"
+      },
+      "id": "8f1b3a6b-8385-40de-aedd-4562a4a3f1a6",
+      "name": "Code18",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1960,
+        2600
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 5
+      },
+      "id": "8cc9930b-1393-48c1-a214-276a0d583025",
+      "name": "scan_status",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3260,
+        3900
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9e959b9e-c2e5-48f5-891f-606d65ceded5",
+      "name": "XML3",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2320,
+        2200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\n/*report_ip_filter=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.ID\ntitle=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.TITLE\nformat=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.OUTPUT_FORMAT\nstate=$input.item.json.REPORT_LIST_OUTPUT.RESPONSE.REPORT_LIST.REPORT.STATUS.STATE*/\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\n\n$input.item.json.messageid = $('Code11').item.json.messageid;\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('HTTP Request2').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.channelid=$('Code11').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('Code11').item.json.body.channelData.team.id\n\nreturn $input.item;"
+      },
+      "id": "4f710c2e-3368-4721-a6e2-5d66272383d7",
+      "name": "Code19",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2060,
+        2200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "fe7c5160-155b-49eb-bfa4-e08ff3494e04",
+      "name": "XML5",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -1660,
+        2540
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.json.messageid = $('Code14').item.json.messageid;\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('HTTP Request3').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('Code14').item.json.channelid\n$input.item.json.teamsid=$('Code14').item.json.teamsid\n\nreturn $input.item;"
+      },
+      "id": "691299e9-fd95-43c3-b376-ec893d00ec16",
+      "name": "Code20",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -80,
+        2760
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('Code22').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n///$('Code22').item.json.response_message=\"<html><body><p style='color:green'>\"+$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT+\"</p></html></body>\"\n$('Code22').item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n$('Code22').item.json.messageid=$('Code2').item.json.messageid\n$('Code22').item.json.teamsid=$('Code2').item.json.teamsid\n$('Code22').item.json.channelid=$('Code2').item.json.channelid\nreturn $('Code22').item"
+      },
+      "id": "99ebcf45-98c4-4df8-a2fb-14dd1903964b",
+      "name": "Code21",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1560,
+        4060
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "=data",
+        "options": {}
+      },
+      "id": "6b87848c-b16c-488d-9ea6-397baefc74c6",
+      "name": "XML7",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2060,
+        4000
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "message=$input.item.json.error.message\nindex = message.indexOf('-');\nstatusCode=  message.substring(0, index);\nxml = message.substring(index + 1)\nxml2 = xml.substring(2, xml.length - 1)\nxml2=xml2.replaceAll('\\\\n','')\n\nint_statusCode=parseInt(statusCode)\n$input.item.json.statusCode=int_statusCode\n$input.item.json.data=xml2\nreturn $input.item;"
+      },
+      "id": "294dfe8b-f3b9-46a5-8810-265fe4c904e8",
+      "name": "Code22",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2300,
+        3840
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 8
+      },
+      "id": "5786f328-534c-4621-a5a8-73b9d9614b4d",
+      "name": "add4scan",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        -3260,
+        4100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var endpoint_filter=\"\"\n\n   cmd=JSON.parse($input.item.json.body['text']);\n   rawinput=cmd['add4scan_list'];\n\ntry {\n  $input.item.json['rawinput']=rawinput;\n    JSON.parse(rawinput);\n} catch (error) {\n  $input.item.json['splitlen']=rawinput.split(\" \").length;\n  if(rawinput.split(\" \").length>=1)\n  {\n    inputarray=rawinput.split(\" \");\n    endpoint_filter=rawinput.replaceAll(\" \",\",\");\n  }\n} \n\nif(endpoint_filter==\"\")\nendpoint_filter=cmd['add4scan_list']\n\n\n  \n\n $input.item.json.env=\"GovCloudDev\"\n$input.item.json.option_title=\"Initial Options\"\n$input.item.json.iscanner_name=\"FedRAMP_DEVQA\"\n$input.item.json.env_id=\"5562184\"\n$input.item.json.Qualyshost=$input.item.json['Qualys-Govcloud'];\nhost=JSON.parse($input.item.json.body.text)\nif(host.host_type_add4scan==\"commercial\")\n{\n  $input.item.json.Qualyshost=$input.item.json['Qualys-commercial'];\n  $input.item.json.env_id=\"2221710\"\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"IICS_QA\"\n  $input.item.json.iscanner_name=\"ICHS_QA\"\n}\n\n$input.item.json.post_data='action=update&add_ips='+endpoint_filter+'&ids='+$input.item.json.env_id\n$input.item.json.endpoint_filter=endpoint_filter\n$input.item.json.response_type=\"HTML\"\n$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\n\nreturn $input.item"
+      },
+      "id": "15685bc6-9894-43c1-ba1b-279b23cac866",
+      "name": "compliedata",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3020,
+        4120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json[\"Qualyshost\"]}}/api/2.0/fo/auth/unix/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "={{ $json['post_data'] }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "ea069704-0ccb-4e50-afb6-9a22b89cc346",
+      "name": "add4scan1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2720,
+        4200
+      ],
+      "typeVersion": 3,
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json['statusCode'] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "ebb3a809-cfd2-4b46-b793-2173ac9d0140",
+      "name": "IF9",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2440,
+        4200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9c8d0f4d-cd15-49a9-9aca-b838862b7d73",
+      "name": "XML9",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2320,
+        4040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n///$('Code22').item.json.response_message=\"<html><body><p style='color:green'>\"+$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT+\"</p></html></body>\"\n$input.item.json.response_message=\"<html><body><h1 style='color:green'>Add4scan Success</h1><br><p>IPs \"+$('compliedata').item.json.endpoint_filter+\" added for auth scan in \"+$('compliedata').item.json.env+\"<br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a>\"\n$input.item.json.messageid=$('compliedata').item.json.messageid\n$input.item.json.teamsid=$('compliedata').item.json.teamsid\n$input.item.json.channelid=$('compliedata').item.json.channelid\nreturn $input.item"
+      },
+      "id": "8007a3bf-c1bc-412a-a98a-623a5849e5ee",
+      "name": "Code23",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1880,
+        4160
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "message=$input.item.json.error.message\nindex = message.indexOf('-');\nstatusCode=  message.substring(0, index);\nxml = message.substring(index + 1)\nxml2 = xml.substring(2, xml.length - 1)\nxml2=xml2.replaceAll('\\\\n','')\n\nint_statusCode=parseInt(statusCode)\n$input.item.json.statusCode=int_statusCode\n$input.item.json.data=xml2\nreturn $input.item;\n"
+      },
+      "id": "ecaaa864-b333-4e2a-88e1-ccf70f06491f",
+      "name": "Code4",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2280,
+        4280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6264f9c7-11ee-4fbd-8771-a6b86058b23d",
+      "name": "XML4",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -2020,
+        4300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('Code4').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n///$('Code22').item.json.response_message=\"<html><body><p style='color:green'>\"+$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT+\"</p></html></body>\"\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n$input.item.json.messageid=$('compliedata').item.json.messageid\n$input.item.json.teamsid=$('compliedata').item.json.teamsid\n$input.item.json.channelid=$('compliedata').item.json.channelid\nreturn $input.item"
+      },
+      "id": "9301db9f-f1a6-4dcb-9d0b-6a4db2c6cbab",
+      "name": "Code9",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1760,
+        4300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3ac3d028-580e-44cc-82fd-f2c4d13cc64a",
+      "name": "XML10",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -1640,
+        2400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.json.messageid = $('Code14').item.json.messageid;\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('HTTP Request3').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"Report cannot be fetched.\" && statusCode==200)\nresponse_message=\"Report generation is still in progress: Please wait for it to get completed. The link for the report will be provided below after completion.\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body><p style='color:green'>\"+response_message+\"</p></html></body>\"\n\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('Code14').item.json.channelid\n$input.item.json.teamsid=$('Code14').item.json.teamsid\n\nreturn $input.item;"
+      },
+      "id": "5e28c90c-8771-4ee7-928e-107098b4d6b4",
+      "name": "Code24",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1160,
+        2620
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json['error'] }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "b669900e-acac-44f4-b62e-d3e31c9cea06",
+      "name": "IF11",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2080,
+        3780
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "statusCode=$input.item.json.SIMPLE_RETURN.RESPONSE.CODE\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response.includes(\"One or more IPs are not available to this user\") && statusCode==1905)\n{\nparam=\"commercial\"\nif($('Code2').item.json.Qualyshost.includes(\"https://qualysapi.qg3.apps.qualys.com\"))\n{\nparam=\"govcvloud\"\n}\nresponse_message=\"Please enter a valid \"+param+\" Ip. Error Code: QBOT_QS_CRD006\"\n}\nelse\n  response_message=message_response\n///$('Code22').item.json.response_message=\"<html><body><p style='color:green'>\"+$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT+\"</p></html></body>\"\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n$input.item.json.messageid=$('Code2').item.json.messageid\n$input.item.json.teamsid=$('Code2').item.json.teamsid\n$input.item.json.channelid=$('Code2').item.json.channelid\nreturn $input.item\n\nreturn $input.item;"
+      },
+      "id": "ec95835e-e9d0-4dcd-8985-4af130a27dcf",
+      "name": "Code25",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1740,
+        3860
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\nerror=false\nif($input.item.json.SIMPLE_RETURN.RESPONSE.CODE)\n{\n  error=true\n}\n$input.item.json.error=error\nreturn $input.item;"
+      },
+      "id": "9806b3b5-f142-4d29-8d39-c0122f09d78c",
+      "name": "Code26",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2280,
+        3700
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "host=JSON.parse($input.item.json.body.text)\n\nisCompliance=false\ntry{\n    if(host.scan_type_genreport==\"compliance\")\n    {\n      isCompliance=true;\n    }\n  }\n  catch(e)\n  {\n    \n  }\n$input.item.json.isCompliance=isCompliance\nif(host.host_type==\"commercial\" || host.host_type_scan==\"commercial\" || host.host_type_add4scan==\"commercial\" || host.host_type_scan_status==\"commercial\"||\n  host.host_type_genreport==\"commercial\"||\nhost.host_type_reportstatus==\"commercial\"||host.host_type_getreport==\"commercial\")\n{\n  \n  \n  $input.item.json.Qualyshost=\"https://qualysapi.qg4.apps.qualys.com\";\n $input.item.json.env=\"IICS QA\"\n  $input.item.json.option_title=\"IICS_QA\"\n  $input.item.json.iscanner_name=\"ICHS_QA_New\"\n $input.item.json.Qualyscred=\"Basic token\"\n}\n  \n//if input (govclud/commercial)\nelse if(host.host_type==\"govcloud\" || host.host_type_scan==\"govcloud\" || host.host_type_add4scan==\"govcloud\" || host.host_type_scan_status==\"govcloud\"||host.host_type_genreport==\"govcloud\"||\nhost.host_type_reportstatus==\"govcloud\"||host.host_type_getreport==\"govcloud\")\n{\n  $input.item.json.Qualyshost=\"https://qualysapi.qg3.apps.qualys.com\";\n$input.item.json.Qualyscred=\"Basic token\"\n \n}\n\nreturn $input.item;"
+      },
+      "id": "c97d178b-de04-4ebb-a702-398452159f94",
+      "name": "Code27",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -4560,
+        3120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\nerror=true\nif($input.item.json.HOST_LIST_OUTPUT.RESPONSE.HOST_LIST)\n{\n  error=false\n}\n$input.item.json.error=error\nreturn $input.item;"
+      },
+      "id": "684e17ea-40b4-4adc-a002-bce665eb1c5d",
+      "name": "Code28",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1800,
+        3120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json['error'] }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "e281ef8a-161e-444c-87af-d566d36fed2d",
+      "name": "IF12",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1620,
+        3160
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "error=\"<p style='color:red'>Oops! something went wrong</p>\"\n\nhost=JSON.parse($('IF7').item.json.body.text)\nparam=\"Govcloud\"\nif(host.host_type==\"commercial\")\n{\n  param=\"Commercial\"\n}\n\n//response_message=\"Please enter a valid \"+param+\" IP.Error Code: QBOT_QS_CRD006\"\n\nresponse_message=\"Failed because of invalid \"+param+\" IP. Make sure the IP is valid and is present in \"+param+\" env. Please retry with correct data. Error Code: QBOT_QS_CRD006\"\n\n$('HTTP hostinfo1').item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n$('HTTP hostinfo1').item.json.messageid=$('Validate user input1').item.json.messageid\n$('HTTP hostinfo1').item.json.channelid=$('Validate user input1').item.json.body.channelData.channel.id\n$('HTTP hostinfo1').item.json.teamsid=$('Validate user input1').item.json.body.channelData.team.id\nreturn $('HTTP hostinfo1').item \n"
+      },
+      "id": "554e02da-cb99-4c90-8e39-7146ae9c82a3",
+      "name": "Code29",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1360,
+        3260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $input.item.json.error }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "524b636c-ddfb-4a67-bc9b-a223a1e17a97",
+      "name": "IF13",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2340,
+        2460
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.json.messageid = $('Code14').item.json.messageid;\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\n\nresponse_message=\"Please provide valid govcloud ip. Error Code: QBOT_QS_CRD006\"\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('Code14').item.json.channelid\n$input.item.json.teamsid=$('Code14').item.json.teamsid\n\nreturn $input.item;"
+      },
+      "id": "56453249-f496-4308-b248-683497f84d4f",
+      "name": "Code30",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -380,
+        2560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $input.item.json.error }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "4937164f-6edd-484d-9915-2e0046b0e888",
+      "name": "IF14",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1440,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var link=$input.item.json.data\n$input.item.json.messageid=$('Code14').item.json.messageid\n$input.item.json.teamsid=$('Code14').item.json.teamsid\n$input.item.json.channelid=$('Code14').item.json.channelid\n$input.item.json.response_message=\"<html><body><p style='color:green'>Report generation is still in progress: Please wait for it to get completed. If you do not get report within estimated time then please check if valid report ID is entered. Error Code: QBOT_QS_CRD009</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></body></html>\"\nreturn $input.item;"
+      },
+      "id": "424bf1bc-c619-4172-834d-102eb6345f5f",
+      "name": "Code31",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -720,
+        2600
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "614b58c0-6ff2-4f30-9fdf-c4269532d29a",
+        "options": {}
+      },
+      "id": "d2db52f6-4e1e-4060-bf12-e342943ec4f9",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -4760,
+        3120
+      ],
+      "webhookId": "614b58c0-6ff2-4f30-9fdf-c4269532d29a",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\nisCompliance=false\nconst cveRegex = /CVE-\\d{4}-\\d{4,}/;\nif ($json[\"filename\"].includes(\"Compliance\"))\n{\n  isCompliance=true\n}\nelse{\ndata=$input.item.json.data.replace(/\"/g, \"'\")\n//$input.item.json.refined=data\nrows=data.split('\\n')\n//$input.item.json.rows=rows\nvar dict={}\njson_arr=[]\nheader=0\n\nfor(i=0;i<rows.length;i++)\n  {\n    if (rows[i].includes(\"CVSS3.1 Base\"))\n    {\n      header=i\n      break\n    }\n  }\n//$input.item.json.header=header\nfor(i=header+1;i<rows.length;i++)\n  {\n    if(rows[i].includes('QAGENT'))\n    {\n    values=rows[i].split(',')\n    //$input.item.json.values=values\n    //$input.item.json.row=rows[i]\n    qid=values[8]\n      for (j=21;j<values.length;j++)\n        {\n          //if(values[j].includes('CVE'))\n          if (cveRegex.test(values[j]))\n          {\n            qid=qid.replace(/[\"']/g, '').trim()\n            cve=values[j].replace(/[\"']/g, '').trim()\n           json_obj={\n      'qid':qid,\n      'cve':cve,\n         }\n       json_arr.push(json_obj)\n    }\n  }\n  }\n  }\n$input.item.json.json_arr=json_arr\nconst date = new Date();\nconst year = date.getFullYear();\nconst month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so we add 1\nconst day = String(date.getDate()).padStart(2, '0');\n\n$input.item.json.date=year+'/'+month+'/'+day\n}\n$input.item.json.isCompliance=isCompliance\n\nreturn $input.item"
+      },
+      "id": "98253feb-9a34-4fb0-af61-5545e30c4d4e",
+      "name": "Code41",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1240,
+        2140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\ncache_obj=$('Move Binary Data').item.json\n//$input.item.json.test=cache_obj['CVE-2023-20593']\n//bool='CVE-2023-20593' in cache_obj\n//$input.item.json.bool=bool\ncves=$('Code41').item.json.json_arr\ndict={}\nnot_in_cache=[]\nfor (i=0;i<cves.length;i++)\n  {\n    new_sev=''\n    if (cves[i]['cve'] in cache_obj)\n    {\n      new_sev=cache_obj[cves[i]['cve']]['priority']\n\n    if ([cves[i]['qid']] in dict)\n    {\n    sev=dict[cves[i]['qid']]\n      order={'Critical':1,'High':2,'Medium':3,'Low':4}    \n    if(order[new_sev]>order[sev])\n    {\n      new_sev=sev\n    }\n    }\n      \n    }\n    else{\n     json_obj={'cve':cves[i]['cve']}  \n      not_in_cache.push(json_obj)\n    }\n    dict[cves[i]['qid']]=new_sev\n    \n  }\n$input.item.json.dict=dict\n$input.item.json.not_in_cache=not_in_cache\n\nreturn $input.item"
+      },
+      "id": "265581c7-e3ee-4f74-9fb8-eeb615c42194",
+      "name": "Code42",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -580,
+        1960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "encoding": "binary",
+          "keepSource": false
+        }
+      },
+      "id": "974dddf0-59fd-463b-83ee-7b77d8e58386",
+      "name": "Move Binary Data",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "position": [
+        -800,
+        1960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $input.item.json.not_in_cache.length }}",
+              "value2": 1
+            }
+          ]
+        }
+      },
+      "id": "8f9c6843-3ff4-4ee7-9927-194f19ecbdd8",
+      "name": "IF5",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -360,
+        1960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "python",
+        "pythonCode": "# Add a new field called 'myNewField' to the JSON of the item\nimport boto3\ns3 = boto3.client('s3')\n\n\nbucket_name = 'security-prod-qualys-reports-risklogyx'\nobject_key = 'risklogyx-reports/cache/2024/04/10/cache'\n\ntry:\n    # Get the object\n    response = s3.get_object(Bucket=bucket_name, Key=object_key)\n    \n    # Print the object content\n    content = response['Body'].read().decode('utf-8')\n    print(content)\n\nexcept Exception as e:\n    print(f\"Error getting object: {e}\")\nreturn _input.item"
+      },
+      "id": "8397cbd7-a68b-45cf-b4aa-31636e6e6e38",
+      "name": "Code33",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -540,
+        2340
+      ]
+    },
+    {
+      "parameters": {
+        "command": "\n"
+      },
+      "id": "a0fd027d-1b0f-4b68-9b35-71c0a372bcc6",
+      "name": "Execute Command",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        2340
+      ]
+    },
+    {
+      "parameters": {
+        "bucketName": "security-prod-qualys-reports-risklogyx",
+        "fileKey": "=risklogyx-reports/cache/{{ $json['date'] }}/cache"
+      },
+      "id": "cb090e43-5276-4f2e-a2cd-46b0164c1d45",
+      "name": "AWS S31",
+      "type": "n8n-nodes-base.awsS3",
+      "position": [
+        -940,
+        1960
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "aws": {
+          "id": "mjmTknxZn4VpWL71",
+          "name": "AWS account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "not_in_cache",
+        "options": {}
+      },
+      "id": "819eb25b-ec0c-4e24-aac4-339f8ffb3409",
+      "name": "Item Lists",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        -140,
+        2040
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\ndict=$('Code42').item.json.dict\n//data=$('Code41').item.json.data.replace(/\"/g, \"'\")\ndata=$('Code41').item.json.data\n//$input.item.json.refined=data\nrows=data.split(/\\n(?=(?:(?:[^\"]*\"){2})*[^\"]*$)/)\ndata=data.replaceAll(/\"/g, \"'\")\n\n//$input.item.json.rows=rows\ncsv_data=''\n//$input.item.json.rows=rows\njson_arr=[]\nheader=0\nfor(i=0;i<rows.length;i++)\n  {\n    \n    if (rows[i].includes(\"CVSS3.1 Base\"))\n    {\n      header=i\n      break\n    }\n    //csv_data=csv_data+rows[i]+'\\n'\n  }\n//rows[i]=rows[i].trim()+',\"InfaSev\"\\n'\nrows[i]=rows[i].trim()+',\"InfaSev\"'\n//csv_data=csv_data+rows[i]\n//$input.item.json.header=header\nupdated_rows=[]\nfor(i=header+1;i<rows.length;i++)\n  {\n    if(rows[i].includes('QAGENT'))\n    {\n    values=rows[i].split(',')\n    //$input.item.json.values=values\n    //$input.item.json.row=rows[i]\n    qid=values[8]\n    qid=qid.replace(/[\"']/g, '').trim()\n    //$input.item.json.test_qid=qid\n    //$input.item.json.test_sev=dict[qid]\n    \n    \n    if(!(qid in dict)){\n        OS=\"\"\n    for(let j=0;j<values.length;j++)\n      {\n      if (values[j].includes(\"(AV:\"))\n      {\n        OSint=parseFloat(values[j].split(\" \")[0])\n        if (OSint < 4){\n        OS = 'Low'}\n    else if (OSint < 7){\n        OS = 'Medium'}\n    else if (OSint < 9){\n        OS = 'High'}\n    else if (OSint <=10){\n        OS = 'Critical'}\n  \n      }\n      \n    }\n      dict[qid]=OS\n   $input.item.json.updated_dict=dict\n\n      //updated_rows.push(rows[i])\n  }\n       rows[i]=values.join(',')\n    rows[i]=rows[i].trim()+',\"'+dict[qid]+'\"'\n  }\n          \n    //csv_data=csv_data+rows[i]+'\\n'\n  }\ncsv_data=csv_data.replaceAll(/'/g, '\"')\ncsv_data=rows.join('\\n')\n\n$('Code15').item.json.data=csv_data\n//$input.item.json.updated_rows=updated_rows\nreturn $input.item"
+      },
+      "id": "fbc6447b-f579-4bda-a892-64946b5ba664",
+      "name": "Code32",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -160,
+        1740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-22.westus.logic.azure.com:443/workflows/2e2e95a54b964af1abff1865f780c955/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2pvGzxMq9yeqIUghrmQxxeYs_zhC6PQTCCsxi31aIXo",
+        "options": {}
+      },
+      "id": "8964f6aa-b0f0-4190-a676-a8963a397c28",
+      "name": "HTTP Request6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        540,
+        2040
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://52.27.119.211:8081/api/risklogix?cve=CVE-2021-45105",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "bafbb869-79c0-4ea0-9509-fd8f82c78ee9",
+      "name": "HTTP Request5",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        2040
+      ],
+      "typeVersion": 4,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "27bc324f-d55f-4323-9da7-1620ee2a7b96",
+              "leftValue": "={{ $json['isCompliance'] }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e2994d9f-01a6-467c-acfa-3894b61c3fb1",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1020,
+        2200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6d6cad8d-e48e-4fe7-a4fa-5ed3b5595692",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        1700
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=pip install pandas"
+      },
+      "id": "0c616a8d-584d-4177-858e-048414d35dd9",
+      "name": "Execute Command1",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1380,
+        1820
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\narr=[]\ndata=$input.item.json.data\n\n\nreturn $input.item;"
+      },
+      "id": "7169791b-a4e1-4457-9699-77aa9188d75b",
+      "name": "Code34",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        1660
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "data",
+        "options": {}
+      },
+      "id": "caaf3e48-32a0-4006-8dcc-0c2102f4c6eb",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        300,
+        1900
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3fdd2f78-e509-4faf-9916-db1adab92102",
+      "name": "XML8",
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -1940,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "09724990-0a9b-4603-9c43-17f432a3168a",
+      "name": "XML11",
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -1880,
+        3300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-151.westus.logic.azure.com:443/workflows/a095a510c9ee4a15a4431ba7059b2a77/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Du4OksBsGsMvsOlm25hIQVmTH3VsvSqt6wXEyRwIhWI",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "adaptivejson",
+              "value": "={{ $json['adaptivejson'] }}"
+            },
+            {
+              "name": "channelid",
+              "value": "={{ $('IF7').item.json.body.channelData.channel.id }}"
+            },
+            {
+              "name": "teamsid",
+              "value": "={{ $('IF7').item.json.body.channelData.team.id }}"
+            },
+            {
+              "name": "messageid",
+              "value": "={{ $('IF7').item.json.messageid }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3c77d95a-26bd-4a97-98de-e972c85ee8a3",
+      "name": "HTTP Request4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        60,
+        3320
+      ]
+    }
+  ],
+  "connections": {
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "XML2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1": {
+      "main": [
+        [
+          {
+            "node": "XML1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF2": {
+      "main": [
+        [
+          {
+            "node": "Code17",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF3": {
+      "main": [
+        [
+          {
+            "node": "XML6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF4": {
+      "main": [
+        [
+          {
+            "node": "Code15",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF5": {
+      "main": [
+        [
+          {
+            "node": "Code32",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Share CSV2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF6": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF7": {
+      "main": [
+        [
+          {
+            "node": "HTTP hostinfo1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF8": {
+      "main": [
+        [
+          {
+            "node": "XML8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF9": {
+      "main": [
+        [
+          {
+            "node": "XML9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "extract command and teams details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "handle failures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "adaptivejson",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF10": {
+      "main": [
+        [
+          {
+            "node": "json to csv1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply with Adaptive Card1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF11": {
+      "main": [
+        [
+          {
+            "node": "Code25",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF12": {
+      "main": [
+        [
+          {
+            "node": "Code29",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF13": {
+      "main": [
+        [
+          {
+            "node": "Code30",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF14": {
+      "main": [
+        [
+          {
+            "node": "Code31",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code41",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Code18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML1": {
+      "main": [
+        [
+          {
+            "node": "Code12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML3": {
+      "main": [
+        [
+          {
+            "node": "Code19",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML4": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML5": {
+      "main": [
+        [
+          {
+            "node": "Code20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML6": {
+      "main": [
+        [
+          {
+            "node": "Code26",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML7": {
+      "main": [
+        [
+          {
+            "node": "Code21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML9": {
+      "main": [
+        [
+          {
+            "node": "Code23",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scan": {
+      "main": [
+        [
+          {
+            "node": "compliehostdata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Scan status workflow-31",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "XML4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML10": {
+      "main": [
+        [
+          {
+            "node": "Code24",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code10": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code11": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code12": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code13": {
+      "main": [
+        [
+          {
+            "node": "Reply with Adaptive Card1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code14": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code15": {
+      "main": [
+        [
+          {
+            "node": "IF14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code16": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code17": {
+      "main": [
+        [
+          {
+            "node": "IF4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code18": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code19": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code20": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code21": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code22": {
+      "main": [
+        [
+          {
+            "node": "XML7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code23": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code24": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code25": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code26": {
+      "main": [
+        [
+          {
+            "node": "IF11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code27": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code28": {
+      "main": [
+        [
+          {
+            "node": "IF12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code29": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code30": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code31": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code41": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code42": {
+      "main": [
+        [
+          {
+            "node": "IF5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code27",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add4scan": {
+      "main": [
+        [
+          {
+            "node": "compliedata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hostinfo1": {
+      "main": [
+        [
+          {
+            "node": "compliehostdata2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add4scan1": {
+      "main": [
+        [
+          {
+            "node": "IF9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "genreport": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getreport": {
+      "main": [
+        [
+          {
+            "node": "Code14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share CSV1": {
+      "main": [
+        [
+          {
+            "node": "Code13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share CSV2": {
+      "main": [
+        [
+          {
+            "node": "Code16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compliedata": {
+      "main": [
+        [
+          {
+            "node": "add4scan1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scan_status": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "adaptivejson": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "json to csv1": {
+      "main": [
+        [
+          {
+            "node": "Share CSV1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "IF3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "IF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "IF2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "report_status": {
+      "main": [
+        [
+          {
+            "node": "Code11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP hostinfo1": {
+      "main": [
+        [
+          {
+            "node": "IF8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "handle failures": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Binary Data": {
+      "main": [
+        [
+          {
+            "node": "Code42",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compliehostdata1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compliehostdata2": {
+      "main": [
+        [
+          {
+            "node": "Validate user input1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate user input1": {
+      "main": [
+        [
+          {
+            "node": "IF7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scan status workflow-31": {
+      "main": [
+        [
+          {
+            "node": "Teams HTTP response workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch based on command": {
+      "main": [
+        [
+          {
+            "node": "genreport",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "scan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "scan_status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Hostinfo1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "report_status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "getreport",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "add4scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply with Adaptive Card1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract command and teams details": {
+      "main": [
+        [
+          {
+            "node": "Switch based on command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code33",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS S31": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code32": {
+      "main": [
+        [
+          {
+            "node": "Share CSV2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AWS S31",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Share CSV2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code34",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML8": {
+      "main": [
+        [
+          {
+            "node": "Code28",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML11": {
+      "main": [
+        [
+          {
+            "node": "Code10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "AWS S31",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false
+  },
+  "triggerCount": 1,
+  "versionId": "89492d62-f03a-46b4-9cd3-2922789fc392",
+  "owner": "dlcse@informatica.com"
+}

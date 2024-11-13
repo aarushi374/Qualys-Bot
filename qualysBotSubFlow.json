@@ -499,7 +499,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('Qualysscandetailscommercial').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('Qualysscandetailscommercial').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki..com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
       },
       "id": "9ff66e51-eb97-4625-98aa-3755c78c36bc",
       "name": "Code6",
@@ -526,7 +526,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nstatusCode=$('Qualysscandetailscommercial1').item.json.statusCode\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$input.item.json.messageid=$('Code').item.json.messageid\n$input.item.json.aadObjectId=$('Code').item.json.aadObjectId\n$input.item.json.teamsid=$('Code').item.json.teamsid\n$input.item.json.channelid=$('Code').item.json.channelid\nreturn $input.item;"
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nstatusCode=$('Qualysscandetailscommercial1').item.json.statusCode\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki..com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$input.item.json.messageid=$('Code').item.json.messageid\n$input.item.json.aadObjectId=$('Code').item.json.aadObjectId\n$input.item.json.teamsid=$('Code').item.json.teamsid\n$input.item.json.channelid=$('Code').item.json.channelid\nreturn $input.item;"
       },
       "id": "7ab7949c-102f-43ae-827c-bf10df9f33bb",
       "name": "Code7",
@@ -588,7 +588,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nparan=\"commercial\"\nif($('Code8').item.json.Qualyshost==\"https://qualysapi.qg3.apps.qualys.com\")\n{\n  param =\"govcloud\"\n}\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>Please provide valid \"+ param +\" scan reference id.Error Code: QBOT_QS_CRD003</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=$('IF2').item.json.statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nparan=\"commercial\"\nif($('Code8').item.json.Qualyshost==\"https://qualysapi.qg3.apps.qualys.com\")\n{\n  param =\"govcloud\"\n}\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>Please provide valid \"+ param +\" scan reference id.Error Code: QBOT_QS_CRD003</p><a href='https://infawiki..com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=$('IF2').item.json.statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
       },
       "id": "a873f0be-5301-4beb-a4c4-c3223929508e",
       "name": "Code10",
@@ -608,21 +608,21 @@
           "value": "014RBZ7BM4BKKF5DNAJNHLOK4LIVFYYVO3",
           "mode": "list",
           "cachedResultName": "qualysbotqa",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
         },
         "worksheet": {
           "__rl": true,
           "value": "{00000000-0001-0000-0000-000000000000}",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
         },
         "table": {
           "__rl": true,
           "value": "{3BB18DD8-7840-4889-A063-1BE35E8BA365}",
           "mode": "list",
           "cachedResultName": "Table2",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:J3"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:J3"
         },
         "lookupColumn": "status",
         "lookupValue": "Running",
@@ -654,21 +654,21 @@
           "value": "014RBZ7BM4BKKF5DNAJNHLOK4LIVFYYVO3",
           "mode": "list",
           "cachedResultName": "qualysbotqa",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
         },
         "worksheet": {
           "__rl": true,
           "value": "{00000000-0001-0000-0000-000000000000}",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B2CD9372D-78A7-490B-8C2B-D36B5FC33881%7D&file=qualysbotscanlog_qa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B2CD9372D-78A7-490B-8C2B-D36B5FC33881%7D&file=qualysbotscanlog_qa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
         },
         "table": {
           "__rl": true,
           "value": "{3BB18DD8-7840-4889-A063-1BE35E8BA365}",
           "mode": "list",
           "cachedResultName": "Table2",
-          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:I2"
+          "cachedResultUrl": "https://-my.sharepoint.com/personal/aabansal__com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:I2"
         },
         "dataMode": "autoMap",
         "options": {}
@@ -1017,5 +1017,5 @@
   "settings": {},
   "triggerCount": 1,
   "versionId": "a71951cd-c55d-4fe0-ac4f-bdbb6a979d1d",
-  "owner": "dlcse@informatica.com"
+  "owner": "dlcse@.com"
 }

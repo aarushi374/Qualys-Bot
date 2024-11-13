@@ -1,0 +1,1021 @@
+{
+  "id": "106",
+  "name": "QualysScans - Prod",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "71863d52-895f-4d02-b764-a48d6770e560",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        120,
+        1060
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "nodeMode": "sender",
+        "dataType": "string",
+        "value1": "={{$json['command']}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "scan",
+              "output": 1
+            },
+            {
+              "value2": "get"
+            },
+            {
+              "value2": "scan_status",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "e500221a-b021-4b15-a6e3-e24a76fe303b",
+      "name": "Switch9000",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        340,
+        1060
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "e47cd9d0-0f9d-48d6-abe1-36822570df6a",
+      "name": "getscans",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        600,
+        1020
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nif($json['env']==\"IICS QA\")\n{\nif($json['referenceid'].includes(\"compliance\"))\n   {\n  $input.item.json.Qualyshost=\"https://qualysapi.qg4.apps.qualys.com/api/2.0/fo/scan/compliance/\"\n  \n   }\n  else\n{\n  $input.item.json.Qualyshost=\"https://qualysapi.qg4.apps.qualys.com/api/2.0/fo/scan/\"\n\n}\n    $input.item.json.Qualyscred=\"Basic token\"\n$input.item.json.user=\"nfrma6ca1\"\n}\nelse\n{\n  if($json['referenceid'].includes(\"compliance\")){\n    $input.item.json.Qualyshost=\"https://qualysapi.qg3.apps.qualys.com/api/2.0/fo/scan/compliance/\"\n  }\n  else{\n  $input.item.json.Qualyshost=\"https://qualysapi.qg3.apps.qualys.com/api/2.0/fo/scan/\"\n  \n  \n  }\n  $input.item.json.Qualyscred=\"Basic token\"\n  $input.item.json.user=\"nfrma3ca\"\n}\nips=$input.item.json.referenceid\n\n\n$input.item.json.scanstatus_filter=ips\nreturn $input.item"
+      },
+      "id": "b428050f-1aea-4d31-a617-c1560a5b29d4",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1100,
+        920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "routeIndex": 2
+      },
+      "id": "ea6de0c9-5f50-4186-9d46-5d2ae5eeb10d",
+      "name": "getscanstatus",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        600,
+        1380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$json['Qualyshost']}}/api/2.0/fo/scan/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "=action=list&user_login={{ $json['user'] }}&scan_ref={{ $json['scanstatus_filter'] }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "92ea53b6-2d4c-4f36-92cb-38ecc9b1ddf8",
+      "name": "Qualysscandetailscommercial",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1240,
+        1380
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "routeIndex": 1
+      },
+      "id": "a71896e9-c2fe-423d-b23f-5748d8547c96",
+      "name": "submit scan",
+      "type": "n8n-nodes-switch-nine-thousand.switch9000",
+      "position": [
+        600,
+        1180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "scanid",
+              "value": "={{ $json['scan_id']}}"
+            },
+            {
+              "name": "referenceid",
+              "value": "={{ $json['scan_ref']}}"
+            },
+            {
+              "name": "status",
+              "value": "Running"
+            },
+            {
+              "name": "aadObjectId",
+              "value": "={{ $json['body']['from']['aadObjectId']}}"
+            },
+            {
+              "name": "messageid",
+              "value": "={{ $json['messageid']}}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json['body']['from']['email']}}"
+            },
+            {
+              "name": "env",
+              "value": "={{ $json['env']}}"
+            },
+            {
+              "name": "teamsid",
+              "value": "={{ $json['teamsid']}}"
+            },
+            {
+              "name": "channelid",
+              "value": "={{ $json['channelid']}}"
+            },
+            {
+              "name": "os",
+              "value": "={{ $json['os']}}"
+            }
+          ],
+          "boolean": [
+            {}
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "id": "d9fdcb95-a8da-4467-bf51-e9b2cf9579f5",
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1040,
+        1180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n$('Execute Workflow Trigger').item.json.scanid=$input.item.json.scanid\n$('Execute Workflow Trigger').item.json.referenceid=$input.item.json.referenceid\n$('Execute Workflow Trigger').item.json.qualyshost=\"https://qualysapi.qg2.apps.qualys.com\"\nreturn $('Execute Workflow Trigger').item"
+      },
+      "id": "d1179b51-da58-464f-8f48-efb5909a26a2",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1020,
+        780
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "0d9a3834-4a91-4f33-8050-6027a8d962f6",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        520,
+        840
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$json['Qualyshost']}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "action",
+              "value": "list"
+            },
+            {
+              "name": "user_login",
+              "value": "={{ $json['user'] }}"
+            },
+            {
+              "name": "scan_ref",
+              "value": "={{ $json['scanstatus_filter'] }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json['Qualyscred'] }}"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/x-www-form-urlencoded",
+        "body": "=action=list&user_login={{ $json['user'] }}&scan_ref={{ $json['scanstatus_filter'] }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "0c15fd2a-58dd-4aff-a41f-516dd5f2736d",
+      "name": "Qualysscandetailscommercial1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1420,
+        920
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "workflowId": "83",
+        "options": {}
+      },
+      "id": "932baf37-df8b-4cee-8a4e-0580ee626676",
+      "name": "Execute Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        2500,
+        1000
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.json.channelid=$input.item.json.body.channelData.channel.id\n$input.item.json.teamsid=$input.item.json.body.channelData.team.id\n$input.item.json.os=JSON.parse($input.item.json.body.text)['scan_os']\nreturn $input.item;"
+      },
+      "id": "182a38d5-5715-42da-9f78-8c8055ead76a",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        820,
+        1180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 100
+            }
+          ]
+        }
+      },
+      "id": "54246427-93f6-40ea-bd23-689e46dca30d",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        460,
+        660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "605d85d6-4159-4a91-b0a6-4bf4de453788",
+      "name": "XML4",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        1740,
+        1220
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nscan_result=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE\nscan_target=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.TARGET\nscan_ref=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.REF\nscan_duration=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.DURATION\nscan_substate=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.SUB_STATE\n$input.item.json.response_type=\"HTML\"\n$input.item.json.scan_result=scan_result\n$input.item.json.scan_target=scan_target\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=$('Qualysscandetailscommercial').item.json.statusCode\n/*if(scan_substate=\"No_Host\")\n{\n  $input.item.json.response_message=\"<p><strong style='color:red'>Error:Scan Failed</strong><br> <span ><strong>failure Reason:</strong> One or Multiple IP(s) are not present in commercial Environment. Make sure you validate the IP(s) via Host Info command supported by the Bot.</span></p<br><p> Target IP(s) provided to Scan:<br>\"+scan_target.replaceAll(\",\",\" \")+\"<br>\"\n}\nelse\n{*/\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=$('IF2').item.json.statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\n$input.item.json.response_message=\"<table bordercolor='black' border= '2'><thead><tr style = 'background-color : blue; color: White'><th>Scan Reference</th><th>Scan Status</th><th>Targets</th><th>Duration</th><th>Sub state</th></tr><tr><td>\"+scan_ref+\"</td><td>\"+scan_result+\"</td><td>\"+scan_target+\"</td><td>\"+scan_duration+\"</td><td>\"+scan_substate+\"</td></tr></table><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a>\"\n  /*}*/\nreturn $input.item;"
+      },
+      "id": "6dde0b1b-a475-4ad8-be87-63d030a01d56",
+      "name": "Code4",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2380,
+        1200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5f70e645-d20c-49a1-a247-abef9d95407b",
+      "name": "XML",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        1860,
+        900
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nscan_result=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE\nscan_target=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.TARGET\nscan_ref=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.REF\nscan_duration=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.DURATION\nscan_substate=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.SUB_STATE\n$input.item.json.response_type=\"HTML\"\n$input.item.json.scan_result=scan_result\n$input.item.json.scan_target=scan_target\n$input.item.json.messageid=$('Code').item.json.messageid\n$input.item.json.aadObjectId=$('Code').item.json.aadObjectId\n//if(scan_substate=\"No_Host\")\n//{\n // $input.item.json.response_message=\"<p><strong style='color:red'>Error:Scan Failed</strong><br> <span ><strong>failure Reason:</strong> One or Multiple IP(s) are not present in commercial Environment. Make sure you validate the IP(s) via Host Info command supported by the Bot.</span></p<br><p> Target IP(s) provided to Scan:<br>\"+scan_target.replaceAll(\",\",\" \")+\"<br>\"\n//}\n//else\n$input.item.json.response_message=\"<html><body><p style='color:green'> Scan Execution Complete</p><table bordercolor='black' border= '2'><thead><tr style = 'background-color : blue; color: White'><th>Scan Reference</th><th>Scan Status</th><th>Targets</th><th>Duration</th><th>Sub state</th></tr><tr><td>\"+scan_ref+\"</td><td>\"+scan_result+\"</td><td>\"+scan_target+\"</td><td>\"+scan_duration+\"</td><td>\"+scan_substate+\"</td></tr></table><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a>\"\n  \n$input.item.json.Qualyshost=$('Code').item.json.Qualyshost\n$input.item.json.Qualyscred=$('Code').item.json.Qualyscred\n$input.item.json.triggerpoint=\"scan_cron_nonprod\"\n$input.item.json.teamsid=$('Code').item.json.teamsid\n$input.item.json.channelid=$('Code').item.json.channelid\n$input.item.json.os=$('Code').item.json.os\n//$input.item.json.SCAN_LIST_OUTPUT=\"\"\nreturn $input.item;"
+      },
+      "id": "19b71585-58da-4066-ac09-6b043d1d3e72",
+      "name": "Code5",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2280,
+        900
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json['statusCode'] }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "dbcedbeb-21b3-47d2-8e9b-6915cbd8ce20",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1620,
+        920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://prod-189.westus.logic.azure.com:443/workflows/1b67743cbad9408191ec4733e6323208/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=HoFCxPCrVSRAHsZsJREEZZ44f_hcr7AInGtfPyLGj2Y",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "referenceid",
+              "value": "={{$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.REF}}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8c7f9476-e8df-4c1b-8cda-ff8988ea7759",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2340,
+        560
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nvar state=$input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE\n\nif(state==\"Queued\"){\n  $input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE=\"Running\"\n}\nreturn $input.item;"
+      },
+      "id": "8208d5bc-af90-474a-8582-cfb895c56d95",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1980,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST.SCAN.STATUS.STATE }}",
+              "value2": "Finished"
+            }
+          ]
+        }
+      },
+      "id": "f49e0f1d-54e0-4fc5-827b-760fa1b1c199",
+      "name": "IF1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2080,
+        900
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.statusCode }}",
+              "operation": "equal",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "id": "6891e24c-8e88-443e-89d0-382c12713657",
+      "name": "IF2",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1560,
+        1300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ad3a2b4e-fcaf-43af-bbf9-89d126c76ded",
+      "name": "XML1",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        1780,
+        1380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\nstatusCode=$('Qualysscandetailscommercial').item.json.statusCode\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
+      },
+      "id": "9ff66e51-eb97-4625-98aa-3755c78c36bc",
+      "name": "Code6",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2000,
+        1380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6313e5cf-94fc-4cc4-95e3-dc33a7702842",
+      "name": "XML2",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        1900,
+        1080
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nstatusCode=$('Qualysscandetailscommercial1').item.json.statusCode\n\nmessage_response=$input.item.json.SIMPLE_RETURN.RESPONSE.TEXT\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nif(message_response==\"This account is inactive.\" && statusCode==403)\nresponse_message=\"Password expired. Error code: QBOT_QS_CRD001\"\nelse if(message_response==\"Bad Login/Password\" && statusCode==401)\n  response_message=\"Password wrong. Error code: QBOT_QS_CRD002\"\nelse\n  response_message=message_response\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>\"+response_message+\"</p><a href='https://infawiki.informatica.com/display/CT/Error+codes+and+Debug+information'>Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n$input.item.json.messageid=$('Code').item.json.messageid\n$input.item.json.aadObjectId=$('Code').item.json.aadObjectId\n$input.item.json.teamsid=$('Code').item.json.teamsid\n$input.item.json.channelid=$('Code').item.json.channelid\nreturn $input.item;"
+      },
+      "id": "7ab7949c-102f-43ae-827c-bf10df9f33bb",
+      "name": "Code7",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2120,
+        1080
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\nif($input.item.json.Qualyshost==\"https://qualysapi.qg3.apps.qualys.com\")\n{\n$input.item.json.user=\"nfrma3ca\"\n}\nelse\n{\n  $input.item.json.user=\"nfrma6ca1\"\n}\n  return $input.item;"
+      },
+      "id": "9720b9b7-5c5b-45de-bdc8-a6ff86c3226d",
+      "name": "Code8",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        920,
+        1380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\nerror =true\nif($input.item.json.SCAN_LIST_OUTPUT.RESPONSE.SCAN_LIST)\n{\n  error=false\n}\n$input.item.json.error=error\nreturn $input.item;"
+      },
+      "id": "1248b75e-414c-4576-afe2-c305cae80b65",
+      "name": "Code9",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1920,
+        1220
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json['error'] }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "81df7737-02eb-44e1-8643-a46b540671a6",
+      "name": "IF3",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2140,
+        1220
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the\n// JSON of the item\n\nerror=\"<p style='color:red'>Oops! something went wrong</p>\"\nparan=\"commercial\"\nif($('Code8').item.json.Qualyshost==\"https://qualysapi.qg3.apps.qualys.com\")\n{\n  param =\"govcloud\"\n}\n\n$input.item.json.response_message=\"<html><body>\"+error+\"<p style='color:green'>Please provide valid \"+ param +\" scan reference id.Error Code: QBOT_QS_CRD003</p><a href='https://infawiki.informatica.com/display/CT/User-Error+codes+and+Debug+information'>User-Error codes and Debug information</a><br><a href='https://forms.office.com/Pages/ResponsePage.aspx?Host=Teams&lang=%7Blocale%7D&groupId=%7BgroupId%7D&tid=%7Btid%7D&teamsTheme=%7Btheme%7D&upn=%7Bupn%7D&id=PvQ4Jn33x0-rknt1O3h2_f8CNiz3o7FDmWgETdnzZmpUNFhYRVcxQzVEMlVPWVlKSllMQTlSRjRJVC4u&wdLOR=c6050EBA0-297C-4E3B-B853-760D3241D1A6'>Please provide your feedback</a></html></body>\"\n\n\n$input.item.json.messageid=$('getscanstatus').item.json.messageid\n$input.item.json.statusCode=$('IF2').item.json.statusCode\n$input.item.json.channelid=$('getscanstatus').item.json.body.channelData.channel.id\n$input.item.json.teamsid=$('getscanstatus').item.json.body.channelData.team.id\nreturn $input.item;"
+      },
+      "id": "a873f0be-5301-4beb-a4c4-c3223929508e",
+      "name": "Code10",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2380,
+        1400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "lookup",
+        "workbook": {
+          "__rl": true,
+          "value": "014RBZ7BM4BKKF5DNAJNHLOK4LIVFYYVO3",
+          "mode": "list",
+          "cachedResultName": "qualysbotqa",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{3BB18DD8-7840-4889-A063-1BE35E8BA365}",
+          "mode": "list",
+          "cachedResultName": "Table2",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:J3"
+        },
+        "lookupColumn": "status",
+        "lookupValue": "Running",
+        "options": {
+          "returnAllMatches": true
+        }
+      },
+      "id": "c3b31ef1-8b77-457d-880b-3a920f317b56",
+      "name": "Microsoft Excel 365",
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.1,
+      "position": [
+        820,
+        920
+      ],
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "ZEuvm39iUqFZfBVe",
+          "name": "Microsoft Excel account 4"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "workbook": {
+          "__rl": true,
+          "value": "014RBZ7BM4BKKF5DNAJNHLOK4LIVFYYVO3",
+          "mode": "list",
+          "cachedResultName": "qualysbotqa",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B2CD9372D-78A7-490B-8C2B-D36B5FC33881%7D&file=qualysbotscanlog_qa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{3BB18DD8-7840-4889-A063-1BE35E8BA365}",
+          "mode": "list",
+          "cachedResultName": "Table2",
+          "cachedResultUrl": "https://informatica-my.sharepoint.com/personal/aabansal_informatica_com/_layouts/15/Doc.aspx?sourcedoc=%7B5E940A9C-A08D-4E4B-B72B-8B454B8C55DB%7D&file=qualysbotqa.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Sheet1!A1:I2"
+        },
+        "dataMode": "autoMap",
+        "options": {}
+      },
+      "id": "8c4d7783-6317-435f-a21a-39d7934c4db7",
+      "name": "Microsoft Excel 3651",
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.1,
+      "position": [
+        1340,
+        1180
+      ],
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "ZEuvm39iUqFZfBVe",
+          "name": "Microsoft Excel account 4"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF2": {
+      "main": [
+        [
+          {
+            "node": "XML4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF3": {
+      "main": [
+        [
+          {
+            "node": "Code10",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "IF1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Qualysscandetailscommercial1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML1": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML2": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML4": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Qualysscandetailscommercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "IF3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getscans": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Excel 365",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch9000": {
+      "main": [
+        [
+          {
+            "node": "getscans",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "submit scan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "getscanstatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "submit scan": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getscanstatus": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Excel 365",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch9000",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualysscandetailscommercial": {
+      "main": [
+        [
+          {
+            "node": "IF2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualysscandetailscommercial1": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Excel 365",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Excel 3651",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Excel 365": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "triggerCount": 1,
+  "versionId": "a71951cd-c55d-4fe0-ac4f-bdbb6a979d1d",
+  "owner": "dlcse@informatica.com"
+}
